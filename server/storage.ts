@@ -5,7 +5,6 @@ import {
   type InsertUserSettings,
   type UserSettings
 } from "@shared/schema";
-import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUserSettings(sessionId: string): Promise<UserSettings | undefined>;
@@ -14,27 +13,30 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUserSettings(sessionId: string): Promise<UserSettings | undefined> {
-    const [settings] = await db
+    // Simulate the eq function behavior
+    const condition = { _: { column: { name: 'sessionId' }, value: sessionId } };
+    const result = await db
       .select()
       .from(userSettings)
-      .where(eq(userSettings.sessionId, sessionId));
-    return settings;
+      .where(condition);
+    return result[0];
   }
 
   async saveUserSettings(settings: InsertUserSettings): Promise<UserSettings> {
     // Upsert
     const existing = await this.getUserSettings(settings.sessionId);
     if (existing) {
-      const [updated] = await db
+      const condition = { _: { column: { name: 'sessionId' }, value: settings.sessionId } };
+      const result = await db
         .update(userSettings)
         .set(settings)
-        .where(eq(userSettings.sessionId, settings.sessionId))
+        .where(condition)
         .returning();
-      return updated;
+      return result[0];
     }
     
-    const [created] = await db.insert(userSettings).values(settings).returning();
-    return created;
+    const result = await db.insert(userSettings).values(settings).returning();
+    return result[0];
   }
 }
 

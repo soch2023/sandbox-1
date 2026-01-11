@@ -1,26 +1,4 @@
-// ✅ 【修复版】ESM+TS 专用 sqlite3 连接 + 自动建表 (替换掉原来的那段，粘贴到index.ts最顶部)
-import sqlite3 from "sqlite3";
-// ESM模式下sqlite3的正确调用方式，去掉verbose解构导出，直接调用
-const db = new sqlite3.Database("./chess_user.db", (err) => {
-  if (err) console.error("✅ 数据库连接失败:", err.message);
-  else console.log("✅ SQLite数据库连接成功 ✔️");
-});
 
-// ✅ 自动建表 - 表结构和你原来的完全一致，有表跳过，无表创建
-db.run(
-  `CREATE TABLE IF NOT EXISTS user_settings (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  session_id TEXT NOT NULL UNIQUE,
-  preferences TEXT NOT NULL
-)`,
-  (err) => {
-    if (err) console.error("✅ 建表失败:", err.message);
-    else console.log("✅ user_settings表已就绪 ✔️");
-  }
-);
-
-// ✅ 导出数据库供项目调用
-export { db };
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
@@ -90,8 +68,8 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
+    console.error('Server error:', err);
     res.status(status).json({ message });
-    throw err;
   });
 
   // importantly only setup vite in development and after
