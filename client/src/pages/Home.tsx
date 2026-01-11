@@ -225,11 +225,6 @@ export default function Home() {
                   
                   if (moveHistory.length === 0) return;
                   
-                  // 在人机对战和机器自战模式下，需要暂停AI活动
-                  if (settings.gameMode === 'vsAI' || settings.gameMode === 'aiVsAi') {
-                    setAiVsAiActive(false);
-                  }
-                  
                   const history = [...moveHistory];
                   history.pop(); // 移除最后一步
                   
@@ -254,23 +249,19 @@ export default function Home() {
                   
                   if (success) {
                     const newFen = newGame.fen();
-                    // 按正确顺序更新状态
-                    setGame(newGame);
+                    // 先更新基础状态
+                    setMoveHistory(history);
                     setFen(newFen);
-                    setMoveHistory([...history]);
+                    setGame(newGame);
                   } else {
                     // 如果历史记录推演失败，作为保底方案：使用 chess.js 自带的 undo
                     // 虽然可能不如历史推演精准，但能防止崩溃
                     const rollbackGame = new Chess(game.fen());
-                    const undoResult = rollbackGame.undo();
-                    if (undoResult) {
-                      setGame(rollbackGame);
-                      setFen(rollbackGame.fen());
-                      setMoveHistory(prev => prev.slice(0, -1));
-                    } else {
-                      // 最终保底：重置游戏
-                      resetGame();
-                    }
+                    rollbackGame.undo();
+                    const rollbackFen = rollbackGame.fen();
+                    setGame(rollbackGame);
+                    setFen(rollbackFen);
+                    setMoveHistory(h => h.slice(0, -1));
                   }
                 }}
                 disabled={aiVsAiActive || moveHistory.length === 0}
