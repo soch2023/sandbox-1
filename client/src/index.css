@@ -1,0 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Outfit', sans-serif;
+
+  /* Deep, rich dark theme optimized for concentration */
+  --background: 240 10% 4%;
+  --foreground: 0 0% 98%;
+
+  --card: 240 10% 7%;
+  --card-foreground: 0 0% 98%;
+  
+  --popover: 240 10% 7%;
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 262 80% 60%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 240 5% 15%;
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 240 5% 15%;
+  --muted-foreground: 240 5% 65%;
+
+  --accent: 180 100% 50%; /* Electric cyan for highlights */
+  --accent-foreground: 240 10% 4%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 240 5% 20%;
+  --input: 240 5% 20%;
+  --ring: 262 80% 60%;
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-primary-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    @apply font-bold tracking-tight text-white;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-secondary/30;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-secondary hover:bg-secondary/80 rounded-full;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  @apply bg-card/80 backdrop-blur-md border border-white/5 shadow-xl;
+}
+
+.glass-header {
+  @apply bg-background/80 backdrop-blur-lg border-b border-white/5 sticky top-0 z-50;
+}
+
+/* Chess Specifics */
+.board-wrapper {
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+}
