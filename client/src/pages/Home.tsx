@@ -220,49 +220,56 @@ export default function Home() {
              <Button 
                 variant="ghost" 
                 className="flex gap-2"
-                onClick={() => {
+                onClick={async () => {
                   stop(); // 停止AI计算
                   
                   if (moveHistory.length === 0) return;
                   
-                  const history = [...moveHistory];
-                  history.pop(); // 移除最后一步
-                  
-                  // 创建新游戏并从标准起始位开始推演
-                  const newGame = new Chess();
-                  let success = true;
-                  
-                  for (const m of history) {
-                    try {
-                      const result = newGame.move(m);
-                      if (!result) {
-                        console.error("Invalid move in history:", m);
+                  // 使用异步方式处理悔棋，确保在CodeSandbox环境中正确执行
+                  setTimeout(async () => {
+                    const history = [...moveHistory];
+                    history.pop(); // 移除最后一步
+                    
+                    // 创建新游戏并从标准起始位开始推演
+                    const newGame = new Chess();
+                    let success = true;
+                    
+                    for (const m of history) {
+                      try {
+                        const result = newGame.move(m);
+                        if (!result) {
+                          console.error("Invalid move in history:", m);
+                          success = false;
+                          break;
+                        }
+                      } catch (err) {
+                        console.error("Reconstruction error at move:", m, err);
                         success = false;
                         break;
                       }
-                    } catch (err) {
-                      console.error("Reconstruction error at move:", m, err);
-                      success = false;
-                      break;
                     }
-                  }
-                  
-                  if (success) {
-                    const newFen = newGame.fen();
-                    // 先更新基础状态
-                    setMoveHistory(history);
-                    setFen(newFen);
-                    setGame(newGame);
-                  } else {
-                    // 如果历史记录推演失败，作为保底方案：使用 chess.js 自带的 undo
-                    // 虽然可能不如历史推演精准，但能防止崩溃
-                    const rollbackGame = new Chess(game.fen());
-                    rollbackGame.undo();
-                    const rollbackFen = rollbackGame.fen();
-                    setGame(rollbackGame);
-                    setFen(rollbackFen);
-                    setMoveHistory(h => h.slice(0, -1));
-                  }
+                    
+                    if (success) {
+                      const newFen = newGame.fen();
+                      // 批量更新状态，提高在CodeSandbox中的兼容性
+                      setGame(newGame);
+                      setFen(newFen);
+                      setMoveHistory([...history]);
+                    } else {
+                      // 如果历史记录推演失败，作为保底方案：使用 chess.js 自带的 undo
+                      // 虽然可能不如历史推演精准，但能防止崩溃
+                      const rollbackGame = new Chess(game.fen());
+                      const undoSuccess = rollbackGame.undo();
+                      if (undoSuccess) {
+                        setGame(rollbackGame);
+                        setFen(rollbackGame.fen());
+                        setMoveHistory(prev => prev.slice(0, -1));
+                      } else {
+                        // 最终保底：重置游戏
+                        resetGame();
+                      }
+                    }
+                  }, 0);
                 }}
                 disabled={aiVsAiActive || moveHistory.length === 0}
              >
